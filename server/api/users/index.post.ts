@@ -1,21 +1,15 @@
 import { db } from '../../database'
 import { insertUserSchema, users } from '../../database/schema'
-import { defineResultHandler, Errors, Result } from '../../lib'
+import { defineApiHandler, Errors } from '../../lib'
 
-export default defineResultHandler(async (event) => {
-  if (!db) {
-    return Result.err(Errors.serviceUnavailable('Database not available'))
-  }
+export default defineApiHandler(async (event) => {
+  // Validate first (can test without DB)
+  const data = insertUserSchema.parse(await readBody(event))
 
-  const body = await readBody(event)
-  const parsed = insertUserSchema.safeParse(body)
+  // Then check DB
+  if (!db) throw Errors.serviceUnavailable('Database not available')
 
-  if (!parsed.success) {
-    const message = parsed.error.issues[0]?.message ?? 'Validation failed'
-    return Result.err(Errors.validation(message))
-  }
+  const [newUser] = await db.insert(users).values(data).returning()
 
-  const [newUser] = await db.insert(users).values(parsed.data).returning()
-
-  return Result.ok(newUser)
+  return newUser
 })

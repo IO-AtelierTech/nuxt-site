@@ -148,6 +148,14 @@ export function definePaginatedApiHandler<T>(
         return createErrorResponse(error.toResponse())
       }
 
+      // Handle Zod validation errors
+      if (error && typeof error === 'object' && 'issues' in error) {
+        const zodError = error as { issues: Array<{ message: string }> }
+        const message = zodError.issues.map((i) => i.message).join(', ')
+        setResponseStatus(event, 422)
+        return createErrorResponse(Errors.validation(message).toResponse())
+      }
+
       const appError = Errors.internal(error instanceof Error ? error.message : 'Unknown error')
       setResponseStatus(event, 500)
       return createErrorResponse(appError.toResponse())
