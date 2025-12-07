@@ -1,4 +1,6 @@
-export default defineEventHandler(async () => {
+import { defineApiHandler } from '../lib'
+
+export default defineApiHandler(async () => {
   return {
     status: 'ok',
     timestamp: new Date().toISOString(),

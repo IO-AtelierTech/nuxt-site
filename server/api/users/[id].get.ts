@@ -2,32 +2,24 @@ import { eq } from 'drizzle-orm'
 
 import { db } from '../../database'
 import { users } from '../../database/schema'
+import { defineResultHandler, Errors, Result } from '../../lib'
 
-export default defineEventHandler(async (event) => {
+export default defineResultHandler(async (event) => {
   if (!db) {
-    throw createError({
-      statusCode: 503,
-      message: 'Database not available',
-    })
+    return Result.err(Errors.serviceUnavailable('Database not available'))
   }
 
   const id = Number(getRouterParam(event, 'id'))
 
   if (isNaN(id) || id <= 0) {
-    throw createError({
-      statusCode: 400,
-      message: 'Invalid user ID',
-    })
+    return Result.err(Errors.badRequest('Invalid user ID'))
   }
 
   const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1)
 
   if (!user) {
-    throw createError({
-      statusCode: 404,
-      message: 'User not found',
-    })
+    return Result.err(Errors.notFound('User not found'))
   }
 
-  return { data: user }
+  return Result.ok(user)
 })

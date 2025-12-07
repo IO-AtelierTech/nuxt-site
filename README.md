@@ -11,7 +11,7 @@ A production-ready Nuxt 4 template for internal projects.
 - **ESLint** with import sorting and unused imports detection
 - **Prettier** with Tailwind CSS plugin
 - **unplugin-fonts** for Google Fonts
-- **Code-based routing** via `app/router.options.ts`
+- **Standardized API responses** with Result pattern and typed errors
 - **GitHub Actions** for CI/CD
 
 ## Getting Started
@@ -45,33 +45,36 @@ yarn preview
 │   ├── components/      # Vue components (atoms, molecules, organisms)
 │   ├── composables/     # Vue composables
 │   ├── layouts/         # Layout components
-│   ├── pages/           # Page components (code-based routing)
+│   ├── pages/           # Page components (file-based routing)
+│   ├── types/           # TypeScript type definitions
 │   ├── utils/           # Utility functions
-│   ├── app.vue          # Root component
-│   └── router.options.ts # Route definitions
+│   └── app.vue          # Root component
 ├── server/
 │   ├── api/             # API routes
 │   ├── database/        # Drizzle schema and migrations
+│   ├── lib/             # Result pattern, errors, response utilities
 │   └── utils/           # Server utilities (validation)
 ├── public/              # Static assets
 └── .github/workflows/   # CI/CD pipelines
 ```
 
-## Code-Based Routing
+## API Response Pattern
 
-Routes are defined in `app/router.options.ts`. File-based routing is disabled.
+API routes use a standardized Result pattern with typed errors:
 
 ```ts
-export default <RouterConfig>{
-  routes: (_routes) => [
-    {
-      name: 'home',
-      path: '/',
-      component: () => import('~/pages/index.vue'),
-    },
-    // Add more routes here
-  ],
-}
+import { defineResultHandler, Errors, Result } from '../../lib'
+
+export default defineResultHandler(async (event) => {
+  const id = Number(getRouterParam(event, 'id'))
+
+  if (isNaN(id) || id <= 0) {
+    return Result.err(Errors.badRequest('Invalid ID'))
+  }
+
+  const data = await fetchData(id)
+  return Result.ok(data)
+})
 ```
 
 ## Scripts
