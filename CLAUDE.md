@@ -8,10 +8,10 @@ Project-specific guidelines for Claude Code when working on this Nuxt template.
 app/
 ├── config/brand.ts      # Single source of truth for colors/fonts
 ├── types/brand.ts       # Brand type definitions
-├── components/
-│   ├── atoms/           # BaseButton, BaseMarkdown
-│   ├── AppHeader.vue    # Header with theme toggle
-│   └── AppFooter.vue    # Footer
+├── components/          # Atomic Design (auto-imported, no prefix)
+│   ├── atoms/           # Indivisible: BaseButton, BaseMarkdown
+│   ├── molecules/       # Atom groups: FeatureCard
+│   └── organisms/       # Sections: AppHeader, AppFooter
 ├── composables/
 │   ├── useBrand.ts      # Brand colors/fonts (theme-aware)
 │   ├── useTheme.ts      # Light/dark mode
@@ -54,6 +54,29 @@ if (isDev) console.log('Development mode')
 ```
 
 Required vars throw on startup if missing. See `.env.example` for reference.
+
+## Components (Atomic Design)
+
+Components follow [Atomic Design](https://bradfrost.com/blog/post/atomic-web-design/) and are auto-imported without path prefix.
+
+| Level         | Folder       | Description             | Examples                     |
+| ------------- | ------------ | ----------------------- | ---------------------------- |
+| **Atoms**     | `atoms/`     | Indivisible UI elements | `BaseButton`, `BaseMarkdown` |
+| **Molecules** | `molecules/` | Groups of atoms         | `FeatureCard`                |
+| **Organisms** | `organisms/` | Complex sections        | `AppHeader`, `AppFooter`     |
+
+```vue
+<!-- All components auto-imported by name, regardless of folder -->
+<BaseButton variant="primary">Click</BaseButton>
+<FeatureCard title="Feature" description="..." icon="bolt" />
+<AppHeader />
+```
+
+When creating new components:
+
+- **Atoms**: Single-purpose, no dependencies on other components
+- **Molecules**: Combine 2+ atoms, still reusable across contexts
+- **Organisms**: Context-specific sections, may include business logic
 
 ## Brand System
 
@@ -143,12 +166,12 @@ Classes: `prose`, `prose-sm`, `prose-lg`, `prose-full`
 
 ### Handler Patterns
 
-| Handler | Pattern | Use Case |
-|---------|---------|----------|
-| `defineApiHandler` | Throw | Simple handlers (recommended) |
-| `defineResultHandler` | Result | Complex validation flows |
-| `definePaginatedApiHandler` | Throw | Paginated lists |
-| `definePaginatedResultHandler` | Result | Paginated with validation |
+| Handler                        | Pattern | Use Case                      |
+| ------------------------------ | ------- | ----------------------------- |
+| `defineApiHandler`             | Throw   | Simple handlers (recommended) |
+| `defineResultHandler`          | Result  | Complex validation flows      |
+| `definePaginatedApiHandler`    | Throw   | Paginated lists               |
+| `definePaginatedResultHandler` | Result  | Paginated with validation     |
 
 ### Throw Pattern (Recommended)
 
@@ -162,7 +185,7 @@ export default defineApiHandler(async (event) => {
   const user = await db.query.users.findFirst({ where: eq(users.id, id) })
   if (!user) throw Errors.notFound('User not found')
 
-  return user  // Auto-wrapped in success response
+  return user // Auto-wrapped in success response
 })
 ```
 
@@ -183,14 +206,14 @@ export default defineResultHandler(async (event) => {
 ### Error Factory
 
 ```ts
-Errors.badRequest(msg)        // 400
-Errors.unauthorized(msg)      // 401
-Errors.forbidden(msg)         // 403
-Errors.notFound(msg)          // 404
-Errors.conflict(msg)          // 409
-Errors.validation(msg)        // 422
-Errors.internal(msg)          // 500
-Errors.serviceUnavailable(msg)// 503
+Errors.badRequest(msg) // 400
+Errors.unauthorized(msg) // 401
+Errors.forbidden(msg) // 403
+Errors.notFound(msg) // 404
+Errors.conflict(msg) // 409
+Errors.validation(msg) // 422
+Errors.internal(msg) // 500
+Errors.serviceUnavailable(msg) // 503
 ```
 
 ### Pagination
@@ -219,3 +242,16 @@ throw createError({ statusCode: 404, message: 'Not found' })
 // WRONG - Plain Error (no metadata)
 throw new Error('Failed')
 ```
+
+## Debugging
+
+When in doubt about whether components are rendering correctly or styles are loading, use the **Puppeteer MCP** to inspect the running app:
+
+```
+1. Start dev server: yarn dev
+2. Use mcp__puppeteer__puppeteer_launch to open browser
+3. Navigate to http://localhost:3000
+4. Take screenshot or inspect elements
+```
+
+This is especially useful for verifying brand colors, component styling, and layout issues.
