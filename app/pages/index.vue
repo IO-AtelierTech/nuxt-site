@@ -29,8 +29,8 @@ const taglines = computed(() =>
       </p>
 
       <p class="text-brand-base/60 mx-auto max-w-2xl text-lg">
-        A production-ready template with Tailwind CSS v4, Drizzle ORM, Zod validation, and the
-        brand system for easy theming.
+        A production-ready template with Tailwind CSS v4, Drizzle ORM, Zod validation, and the brand
+        system for easy theming.
       </p>
 
       <div class="mt-4 flex gap-4">

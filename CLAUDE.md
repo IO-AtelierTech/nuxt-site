@@ -58,8 +58,10 @@ server/
 
 <!-- WRONG - Hardcoded colors -->
 <template>
-  <button class="bg-emerald-600 text-white">Click</button>  <!-- DON'T -->
-  <h1 class="text-gray-900">Title</h1>                      <!-- DON'T -->
+  <button class="bg-emerald-600 text-white">Click</button>
+  <!-- DON'T -->
+  <h1 class="text-gray-900">Title</h1>
+  <!-- DON'T -->
 </template>
 ```
 
@@ -150,12 +152,12 @@ load('/content/article.md')
 
 ### Prose Classes
 
-| Class          | Description                        |
-| -------------- | ---------------------------------- |
-| `prose`        | Base prose styles with brand colors|
-| `prose-sm`     | Smaller text                       |
-| `prose-lg`     | Larger text                        |
-| `prose-full`   | Remove max-width constraint        |
+| Class        | Description                         |
+| ------------ | ----------------------------------- |
+| `prose`      | Base prose styles with brand colors |
+| `prose-sm`   | Smaller text                        |
+| `prose-lg`   | Larger text                         |
+| `prose-full` | Remove max-width constraint         |
 
 ## API Handlers
 
@@ -186,12 +188,12 @@ export default defineResultHandler(async (event) => {
 ```ts
 import { Errors } from '../lib'
 
-Errors.badRequest('Invalid input')       // 400
+Errors.badRequest('Invalid input') // 400
 Errors.unauthorized('Not authenticated') // 401
-Errors.forbidden('Access denied')        // 403
-Errors.notFound('User not found')        // 404
-Errors.conflict('Already exists')        // 409
-Errors.validation('Invalid email')       // 422
-Errors.internal('Server error')          // 500
-Errors.serviceUnavailable('DB offline')  // 503
+Errors.forbidden('Access denied') // 403
+Errors.notFound('User not found') // 404
+Errors.conflict('Already exists') // 409
+Errors.validation('Invalid email') // 422
+Errors.internal('Server error') // 500
+Errors.serviceUnavailable('DB offline') // 503
 ```
