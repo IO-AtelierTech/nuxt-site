@@ -1,95 +1,138 @@
 # Nuxt Site Template
 
-A production-ready Nuxt 4 template for internal projects.
+A production-ready Nuxt 4 template with brand theming, standardized API responses, and atomic design.
 
 ## Features
 
 - **Nuxt 4** with future compatibility mode
-- **Tailwind CSS v4** with PostCSS integration
-- **Drizzle ORM** for type-safe PostgreSQL database access
+- **Tailwind CSS v4** with brand color system
+- **Pinia** for state management
+- **Drizzle ORM** for type-safe PostgreSQL
+- **Vitest** for testing
 - **Zod** for runtime validation
-- **ESLint** with import sorting and unused imports detection
-- **Prettier** with Tailwind CSS plugin
-- **unplugin-fonts** for Google Fonts
-- **Standardized API responses** with Result pattern and typed errors
-- **GitHub Actions** for CI/CD
+- **ESLint + Prettier** with auto-formatting
 
-## Getting Started
+## Quick Start
 
 ```bash
 # Install dependencies
 yarn install
 
+# Copy environment file
+cp .env.example .env
+
 # Start development server
 yarn dev
-
-# Build for production
-yarn build
-
-# Preview production build
-yarn preview
 ```
 
-## Database Setup
+The app runs at `http://localhost:3000`.
 
-1. Copy `.env.example` to `.env` and configure `DATABASE_URL`
-2. Generate migrations: `yarn db:generate`
-3. Apply migrations: `yarn db:migrate`
-4. Open Drizzle Studio: `yarn db:studio`
+## Environment Variables
+
+All server-side env vars are centralized in `server/env.ts` with Zod validation.
+
+```bash
+# Required
+APP_ENV=development  # development | staging | production
+
+# Optional
+DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+```
+
+Missing required vars throw at startup.
 
 ## Project Structure
 
 ```
-├── app/
-│   ├── assets/css/      # Global styles
-│   ├── components/      # Vue components (atoms, molecules, organisms)
-│   ├── composables/     # Vue composables
-│   ├── layouts/         # Layout components
-│   ├── pages/           # Page components (file-based routing)
-│   ├── types/           # TypeScript type definitions
-│   ├── utils/           # Utility functions
-│   └── app.vue          # Root component
-├── server/
-│   ├── api/             # API routes
-│   ├── database/        # Drizzle schema and migrations
-│   ├── lib/             # Result pattern, errors, response utilities
-│   └── utils/           # Server utilities (validation)
-├── public/              # Static assets
-└── .github/workflows/   # CI/CD pipelines
+app/
+├── config/brand.ts      # Brand colors/fonts (single source of truth)
+├── components/          # Atomic Design
+│   ├── atoms/           # BaseButton, BaseMarkdown
+│   ├── molecules/       # FeatureCard
+│   └── organisms/       # AppHeader, AppFooter
+├── composables/         # useBrand, useTheme, useApi
+├── stores/              # Pinia stores
+├── pages/               # File-based routing
+└── assets/css/main.css  # Tailwind theme
+
+server/
+├── env.ts               # Centralized env vars
+├── lib/                 # API response library (MUST USE)
+├── api/                 # API routes
+└── database/            # Drizzle schema
 ```
 
-## API Response Pattern
+## Brand System
 
-API routes use a standardized Result pattern with typed errors:
+All colors and fonts come from `app/config/brand.ts`. Never hardcode colors.
+
+```vue
+<!-- Use brand classes -->
+<button class="bg-brand-accent text-brand-neutral">Click</button>
+<h1 class="font-headers text-brand-base">Title</h1>
+```
+
+Theme toggle with `useTheme()`:
+
+```vue
+<script setup>
+const { isDark, toggleTheme } = useTheme()
+</script>
+```
+
+## API Handlers
+
+All API routes must use `server/lib/` for standardized responses.
 
 ```ts
-import { defineResultHandler, Errors, Result } from '../../lib'
+import { defineApiHandler, Errors } from '../../lib'
 
-export default defineResultHandler(async (event) => {
+export default defineApiHandler(async (event) => {
   const id = Number(getRouterParam(event, 'id'))
+  if (isNaN(id)) throw Errors.badRequest('Invalid ID')
 
-  if (isNaN(id) || id <= 0) {
-    return Result.err(Errors.badRequest('Invalid ID'))
-  }
+  const user = await db.query.users.findFirst({ where: eq(users.id, id) })
+  if (!user) throw Errors.notFound('User not found')
 
-  const data = await fetchData(id)
-  return Result.ok(data)
+  return user // Auto-wrapped: { success: true, timestamp, data }
 })
+```
+
+## Database Setup
+
+```bash
+# Generate migrations
+yarn db:generate
+
+# Apply migrations
+yarn db:migrate
+
+# Open Drizzle Studio
+yarn db:studio
+```
+
+## Testing
+
+```bash
+# Run tests
+yarn test
+
+# Run tests in watch mode
+yarn test --watch
 ```
 
 ## Scripts
 
-| Command            | Description                  |
-| ------------------ | ---------------------------- |
-| `yarn dev`         | Start development server     |
-| `yarn build`       | Build for production         |
-| `yarn generate`    | Generate static site         |
-| `yarn preview`     | Preview production build     |
-| `yarn lint`        | Run ESLint                   |
-| `yarn lint:fix`    | Fix ESLint issues            |
-| `yarn format`      | Format code with Prettier    |
-| `yarn type-check`  | Run TypeScript type checking |
-| `yarn db:generate` | Generate Drizzle migrations  |
-| `yarn db:migrate`  | Apply database migrations    |
-| `yarn db:push`     | Push schema changes (dev)    |
-| `yarn db:studio`   | Open Drizzle Studio          |
+| Command | Description |
+|---------|-------------|
+| `yarn dev` | Start dev server |
+| `yarn build` | Build for production |
+| `yarn test` | Run tests |
+| `yarn lint` | Run ESLint |
+| `yarn format` | Format with Prettier |
+| `yarn type-check` | TypeScript check |
+| `yarn db:studio` | Open Drizzle Studio |
+
+## Documentation
+
+See `CLAUDE.md` for detailed development guidelines.
