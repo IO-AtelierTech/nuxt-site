@@ -1,10 +1,11 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 
+import { env } from '../env'
 import * as schema from './schema'
 
-// Create database connection
-const connectionString = process.env.DATABASE_URL
+// Create database connection from centralized env
+const connectionString = env.DATABASE_URL
 
 if (!connectionString) {
   console.warn('DATABASE_URL is not set. Database features will not work.')

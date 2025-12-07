@@ -23,6 +23,7 @@ app/
 └── assets/css/main.css  # Tailwind @theme + prose
 
 server/
+├── env.ts               # Centralized env vars (Zod validated)
 ├── lib/                 # Standardized response library (MUST USE)
 │   ├── index.ts         # Single import point
 │   ├── error.ts         # AppError class + Errors factory
@@ -33,6 +34,26 @@ server/
 ├── utils/               # Validation schemas
 └── database/            # Drizzle schema + connection
 ```
+
+## Environment Variables
+
+All server-side env vars loaded via `server/env.ts`. Validated with Zod at startup.
+
+```ts
+// server/env.ts - Add new vars here
+const envSchema = z.object({
+  APP_ENV: z.enum(['development', 'staging', 'production']),
+  DATABASE_URL: z.string().optional(),
+  // Add more as needed
+})
+
+// Usage anywhere in server/
+import { env, isDev, isProd } from '../env'
+console.log(env.APP_ENV)
+if (isDev) console.log('Development mode')
+```
+
+Required vars throw on startup if missing. See `.env.example` for reference.
 
 ## Brand System
 
