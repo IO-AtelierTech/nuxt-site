@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+
+/* Font family definitions from unplugin-fonts */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* Custom CSS variables for theming */
+:root {
+  --color-brand-primary: 222.2 47.4% 11.2%;
+  --color-brand-secondary: 210 40% 96.1%;
+  --color-brand-accent: 210 40% 98%;
+}
+
+/* Base styles */
+body {
+  @apply font-sans antialiased;
+}
