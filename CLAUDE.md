@@ -103,6 +103,38 @@ Light Mode:                    Dark Mode:
 └─────────────────────┘        └─────────────────────┘
 ```
 
+## Do NOT
+
+- Hardcode colors: `bg-emerald-600`, `text-gray-900`, `#ff0000`
+- Hardcode fonts: `font-sans`, `font-mono`
+- Use Tailwind's default color palette for UI elements
+- Use same hex value for `base` in both light and dark modes
+
+## Do
+
+- Use `bg-brand-*`, `text-brand-*`, `border-brand-*` classes
+- Use `font-logo`, `font-headers`, `font-primary`, `font-secondary`
+- Use opacity modifiers: `text-brand-base/70`, `bg-brand-accent/10`
+- Invert `base`, `background`, `neutral` between light/dark modes
+
+## Changing the Brand
+
+To rebrand the entire app, edit **only** `app/config/brand.ts`:
+
+```ts
+export const brandConfig: BrandConfig = {
+  name: 'New Brand',
+  light: {
+    accent: '#ff0000', // All buttons, links now red
+  },
+  typography: {
+    logo: 'Orbitron', // All logos now Orbitron
+  },
+}
+```
+
+See `app/types/brand.ts` for detailed color theory documentation.
+
 ## Markdown Rendering
 
 ```vue
@@ -140,45 +172,26 @@ export default defineResultHandler(async (event) => {
 })
 ```
 
+### Available Handlers
+
+| Handler                        | Use Case                                                  |
+| ------------------------------ | --------------------------------------------------------- |
+| `defineResultHandler`          | Returns `Result<T, AppError>` - recommended               |
+| `definePaginatedResultHandler` | Returns paginated `Result<[T, PaginationInfo], AppError>` |
+| `defineApiHandler`             | Throws errors, auto-wrapped in standard response          |
+| `definePaginatedApiHandler`    | Throws errors, returns paginated data                     |
+
 ### Error Factory
 
 ```ts
+import { Errors } from '../lib'
+
 Errors.badRequest('Invalid input')       // 400
 Errors.unauthorized('Not authenticated') // 401
 Errors.forbidden('Access denied')        // 403
 Errors.notFound('User not found')        // 404
+Errors.conflict('Already exists')        // 409
 Errors.validation('Invalid email')       // 422
 Errors.internal('Server error')          // 500
+Errors.serviceUnavailable('DB offline')  // 503
 ```
-
-## Do NOT
-
-- Hardcode colors: `bg-emerald-600`, `text-gray-900`, `#ff0000`
-- Hardcode fonts: `font-sans`, `font-mono`
-- Use Tailwind's default color palette for UI elements
-- Use same hex value for `base` in both light and dark modes
-
-## Do
-
-- Use `bg-brand-*`, `text-brand-*`, `border-brand-*` classes
-- Use `font-logo`, `font-headers`, `font-primary`, `font-secondary`
-- Use opacity modifiers: `text-brand-base/70`, `bg-brand-accent/10`
-- Invert `base`, `background`, `neutral` between light/dark modes
-
-## Changing the Brand
-
-To rebrand the entire app, edit **only** `app/config/brand.ts`:
-
-```ts
-export const brandConfig: BrandConfig = {
-  name: 'New Brand',
-  light: {
-    accent: '#ff0000', // All buttons, links now red
-  },
-  typography: {
-    logo: 'Orbitron', // All logos now Orbitron
-  },
-}
-```
-
-See `app/types/brand.ts` for detailed color theory documentation.
