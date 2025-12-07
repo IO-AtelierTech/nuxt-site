@@ -123,15 +123,15 @@ yarn test --watch
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `yarn dev` | Start dev server |
-| `yarn build` | Build for production |
-| `yarn test` | Run tests |
-| `yarn lint` | Run ESLint |
-| `yarn format` | Format with Prettier |
-| `yarn type-check` | TypeScript check |
-| `yarn db:studio` | Open Drizzle Studio |
+| Command           | Description          |
+| ----------------- | -------------------- |
+| `yarn dev`        | Start dev server     |
+| `yarn build`      | Build for production |
+| `yarn test`       | Run tests            |
+| `yarn lint`       | Run ESLint           |
+| `yarn format`     | Format with Prettier |
+| `yarn type-check` | TypeScript check     |
+| `yarn db:studio`  | Open Drizzle Studio  |
 
 ## Documentation
 

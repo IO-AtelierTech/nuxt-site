@@ -30,11 +30,7 @@ describe('API Response Format', async () => {
     expect(new Date(timestamp).toISOString()).toBe(timestamp)
   }
 
-  const expectErrorResponse = (
-    response: unknown,
-    expectedStatus: number,
-    expectedCode: string
-  ) => {
+  const expectErrorResponse = (response: unknown, expectedStatus: number, expectedCode: string) => {
     expect(response).toMatchObject({
       success: false,
       timestamp: expect.any(String),
