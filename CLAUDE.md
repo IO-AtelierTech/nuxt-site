@@ -2,24 +2,135 @@
 
 Project-specific guidelines for Claude Code when working on this Nuxt template.
 
-## Routing
+## Architecture
 
-**This project uses Nuxt's default file-based routing.**
+```
+app/
+├── config/brand.ts      # Single source of truth for colors/fonts
+├── types/brand.ts       # Brand type definitions with color theory docs
+├── components/
+│   ├── atoms/
+│   │   ├── BaseButton.vue   # Brand-aware button variants
+│   │   └── BaseMarkdown.vue # Brand-aware markdown renderer
+│   ├── AppHeader.vue        # Header with theme toggle
+│   ├── AppFooter.vue        # Footer with brand styling
+│   └── FeatureCard.vue      # Card component with brand colors
+├── composables/
+│   ├── useBrand.ts      # Brand colors/fonts (theme-aware)
+│   ├── useTheme.ts      # Light/dark theme management
+│   ├── useMarkdown.ts   # Load markdown from files/URLs
+│   └── useApi.ts        # API fetch helpers
+├── layouts/default.vue  # Main layout with brand background
+├── pages/               # File-based routing
+├── assets/css/main.css  # Tailwind @theme + prose styles
+└── error.vue            # 404/error page
 
-- Pages in `app/pages/` are auto-registered as routes
-- File name = route path (`index.vue` → `/`, `about.vue` → `/about`)
-- Dynamic routes use brackets: `[id].vue` → `/:id`
+server/
+├── lib/                 # API handler library (MUST USE)
+├── api/                 # API routes
+└── database/            # Drizzle schema + connection
+```
+
+## Brand System (REQUIRED)
+
+**All colors and fonts MUST come from `app/config/brand.ts`. No hardcoded values.**
+
+### The 6-Color Semantic Palette
+
+| Color        | Coverage | Role                              | Component Usage                           |
+| ------------ | -------- | --------------------------------- | ----------------------------------------- |
+| `background` | ~60%     | Page canvas                       | `bg-brand-background`                     |
+| `neutral`    | ~20%     | Cards, elevated surfaces          | `bg-brand-neutral`                        |
+| `base`       | ~15%     | Text, icons, borders              | `text-brand-base`, `border-brand-base/10` |
+| `accent`     | ~3%      | Primary actions, links            | `bg-brand-accent`, `text-brand-accent`    |
+| `secondary`  | ~1%      | Supporting actions, tags          | `bg-brand-secondary`                      |
+| `contrast`   | ~1%      | High-impact CTAs (use sparingly!) | `bg-brand-contrast`                       |
+
+### Using Brand Colors in Components
+
+```vue
+<!-- CORRECT - Use brand Tailwind classes -->
+<template>
+  <button class="bg-brand-accent text-brand-neutral">Click</button>
+  <h1 class="font-headers text-brand-base">Title</h1>
+  <div class="border-brand-secondary bg-brand-neutral">Card</div>
+</template>
+
+<!-- WRONG - Hardcoded colors -->
+<template>
+  <button class="bg-emerald-600 text-white">Click</button>  <!-- DON'T -->
+  <h1 class="text-gray-900">Title</h1>                      <!-- DON'T -->
+</template>
+```
+
+### Available Brand Classes
+
+**Colors:**
+
+- `bg-brand-{base|accent|contrast|secondary|neutral|background}`
+- `text-brand-{base|accent|contrast|secondary|neutral}`
+- `border-brand-{base|accent|contrast|secondary|neutral}`
+- Opacity modifiers work: `bg-brand-accent/50`, `text-brand-base/80`
+
+**Fonts:**
+
+- `font-logo` - Display/logo font
+- `font-headers` - Headings (h1, h2, h3)
+- `font-primary` - Body text
+- `font-secondary` - Code, captions
+
+## Theme System
+
+```vue
+<script setup>
+const { isDark, toggleTheme } = useTheme()
+</script>
+
+<template>
+  <button @click="toggleTheme">{{ isDark ? 'Light' : 'Dark' }} Mode</button>
+</template>
+```
+
+### Light vs Dark Mode Inversion
+
+```
+Light Mode:                    Dark Mode:
+┌─────────────────────┐        ┌─────────────────────┐
+│ background: #ffffff │   ←→   │ background: #0f172a │  INVERTED
+│ neutral:    #f8fafc │   ←→   │ neutral:    #1e293b │  INVERTED
+│ base:       #0f172a │   ←→   │ base:       #f1f5f9 │  INVERTED
+│ accent:     #059669 │   →    │ accent:     #34d399 │  Brightened
+└─────────────────────┘        └─────────────────────┘
+```
+
+## Markdown Rendering
+
+```vue
+<script setup>
+const { content, load } = useMarkdown()
+load('/content/article.md')
+</script>
+
+<template>
+  <BaseMarkdown :content="content" size="lg" />
+</template>
+```
+
+### Prose Classes
+
+| Class          | Description                        |
+| -------------- | ---------------------------------- |
+| `prose`        | Base prose styles with brand colors|
+| `prose-sm`     | Smaller text                       |
+| `prose-lg`     | Larger text                        |
+| `prose-full`   | Remove max-width constraint        |
 
 ## API Handlers
 
 **All API handlers MUST use the standardized response library from `server/lib/`.**
 
-### Required Pattern
-
-Use `defineResultHandler` or `defineApiHandler` instead of raw `defineEventHandler`:
-
 ```ts
-// CORRECT - Use Result pattern (recommended)
+// CORRECT - Use Result pattern
 import { defineResultHandler, Errors, Result } from '../lib'
 
 export default defineResultHandler(async (event) => {
@@ -27,116 +138,47 @@ export default defineResultHandler(async (event) => {
   if (!data) return Result.err(Errors.notFound('Resource not found'))
   return Result.ok(data)
 })
-
-// CORRECT - Use simple API handler (throws errors)
-import { defineApiHandler, Errors } from '../lib'
-
-export default defineApiHandler(async (event) => {
-  const data = await fetchData()
-  if (!data) throw Errors.notFound('Resource not found')
-  return data
-})
-
-// INCORRECT - Don't use raw defineEventHandler for API routes
-export default defineEventHandler(async (event) => {
-  return { data: 'something' } // Non-standard response format
-})
 ```
-
-### Available Handlers
-
-| Handler | Use Case |
-|---------|----------|
-| `defineResultHandler` | Returns `Result<T, AppError>` - recommended |
-| `definePaginatedResultHandler` | Returns paginated `Result<[T, PaginationInfo], AppError>` |
-| `defineApiHandler` | Throws errors, auto-wrapped in standard response |
-| `definePaginatedApiHandler` | Throws errors, returns paginated data |
 
 ### Error Factory
 
-Use `Errors` factory for consistent error codes:
-
 ```ts
-import { Errors } from '../lib'
-
-Errors.badRequest('Invalid input')      // 400
+Errors.badRequest('Invalid input')       // 400
 Errors.unauthorized('Not authenticated') // 401
 Errors.forbidden('Access denied')        // 403
 Errors.notFound('User not found')        // 404
-Errors.conflict('Already exists')        // 409
 Errors.validation('Invalid email')       // 422
 Errors.internal('Server error')          // 500
-Errors.serviceUnavailable('DB offline')  // 503
 ```
 
-### Response Format
+## Do NOT
 
-All API responses follow this structure:
+- Hardcode colors: `bg-emerald-600`, `text-gray-900`, `#ff0000`
+- Hardcode fonts: `font-sans`, `font-mono`
+- Use Tailwind's default color palette for UI elements
+- Use same hex value for `base` in both light and dark modes
+
+## Do
+
+- Use `bg-brand-*`, `text-brand-*`, `border-brand-*` classes
+- Use `font-logo`, `font-headers`, `font-primary`, `font-secondary`
+- Use opacity modifiers: `text-brand-base/70`, `bg-brand-accent/10`
+- Invert `base`, `background`, `neutral` between light/dark modes
+
+## Changing the Brand
+
+To rebrand the entire app, edit **only** `app/config/brand.ts`:
 
 ```ts
-// Success
-{ success: true, timestamp: string, data: T }
-
-// Error
-{ success: false, timestamp: string, error: { status, code, message } }
-
-// Paginated Success
-{ success: true, timestamp: string, data: T, pagination: PaginationInfo }
-```
-
-## Frontend API Consumption
-
-Use the typed composables from `app/composables/useApi.ts`:
-
-```ts
-// Fetch single resource
-const { data } = await useApi<User>('/api/users/1')
-if (data.value?.success) {
-  console.log(data.value.data)
-}
-
-// Fetch paginated list
-const { data } = await usePaginatedApi<User[]>('/api/users')
-if (data.value?.success) {
-  console.log(data.value.data, data.value.pagination)
+export const brandConfig: BrandConfig = {
+  name: 'New Brand',
+  light: {
+    accent: '#ff0000', // All buttons, links now red
+  },
+  typography: {
+    logo: 'Orbitron', // All logos now Orbitron
+  },
 }
 ```
 
-## Validation
-
-Use Zod schemas derived from Drizzle via `drizzle-zod`:
-
-```ts
-// server/database/schema.ts - Single source of truth
-export const insertUserSchema = createInsertSchema(users, {
-  email: z.string().email(),
-  name: z.string().min(2),
-})
-
-// In API handlers
-const parsed = insertUserSchema.safeParse(body)
-if (!parsed.success) {
-  return Result.err(Errors.validation(parsed.error.issues[0]?.message ?? 'Validation failed'))
-}
-```
-
-## File Structure
-
-```
-app/
-├── pages/               # File-based routing (auto-registered)
-├── components/          # Reusable components
-├── composables/useApi.ts # API fetch helpers
-└── types/api.ts         # Shared API response types
-
-server/
-├── lib/                 # Framework library (MUST USE)
-│   ├── error.ts         # AppError + Errors factory
-│   ├── result.ts        # Result<T,E> pattern
-│   ├── response.ts      # Response types
-│   ├── handler.ts       # Nitro handler wrappers
-│   └── index.ts         # Single export point
-├── api/                 # API routes (file-based)
-├── database/            # Drizzle schema + connection
-└── utils/               # Server utilities
-```
+See `app/types/brand.ts` for detailed color theory documentation.

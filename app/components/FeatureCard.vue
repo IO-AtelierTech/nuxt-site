@@ -2,7 +2,8 @@
 defineProps<{
   title: string
   description: string
-  icon: 'palette' | 'database' | 'shield'
+  icon: 'palette' | 'database' | 'shield' | 'bolt' | 'code'
+  color?: 'accent' | 'secondary' | 'contrast'
 }>()
 
 const iconPaths = {
@@ -12,21 +13,42 @@ const iconPaths = {
     'M12 3C7.58 3 4 4.79 4 7s3.58 4 8 4 8-1.79 8-4-3.58-4-8-4zM4 9v3c0 2.21 3.58 4 8 4s8-1.79 8-4V9c-1.29 1.03-3.67 2-8 2S5.29 10.03 4 9zm0 5v3c0 2.21 3.58 4 8 4s8-1.79 8-4v-3c-1.29 1.03-3.67 2-8 2s-6.71-.97-8-2z',
   shield:
     'M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z',
+  bolt: 'M13 10V3L4 14h7v7l9-11h-7z',
+  code: 'M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z',
+}
+
+const colorClasses = {
+  accent: {
+    bg: 'bg-brand-accent/10',
+    text: 'text-brand-accent',
+  },
+  secondary: {
+    bg: 'bg-brand-secondary/10',
+    text: 'text-brand-secondary',
+  },
+  contrast: {
+    bg: 'bg-brand-contrast/10',
+    text: 'text-brand-contrast',
+  },
 }
 </script>
 
 <template>
-  <div class="rounded-xl border border-gray-200 bg-white p-6 transition hover:shadow-lg">
-    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100">
+  <div class="bg-brand-neutral border-brand-base/10 rounded-xl border p-6 shadow-sm transition hover:shadow-lg">
+    <div
+      class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg"
+      :class="colorClasses[color ?? 'accent'].bg"
+    >
       <svg
-        class="h-6 w-6 text-emerald-600"
+        class="h-6 w-6"
+        :class="colorClasses[color ?? 'accent'].text"
         fill="currentColor"
         viewBox="0 0 24 24"
       >
         <path :d="iconPaths[icon]" />
       </svg>
     </div>
-    <h3 class="mb-2 text-lg font-semibold">{{ title }}</h3>
-    <p class="text-gray-600">{{ description }}</p>
+    <h3 class="font-headers text-brand-base mb-2 text-lg font-semibold">{{ title }}</h3>
+    <p class="text-brand-base/60">{{ description }}</p>
   </div>
 </template>

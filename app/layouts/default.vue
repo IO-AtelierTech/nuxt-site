@@ -1,9 +1,9 @@
 <script setup lang="ts">
-// Default layout with header and footer
+// Default layout with brand-aware styling
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col">
+  <div class="bg-brand-background flex min-h-screen flex-col transition-colors duration-200">
     <AppHeader />
 
     <main class="flex-1">
