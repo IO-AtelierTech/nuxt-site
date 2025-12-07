@@ -45,12 +45,12 @@ export default defineEventHandler(async (event) => {
 
 ### Available Handlers
 
-| Handler | Use Case |
-|---------|----------|
-| `defineResultHandler` | Returns `Result<T, AppError>` - recommended |
+| Handler                        | Use Case                                                  |
+| ------------------------------ | --------------------------------------------------------- |
+| `defineResultHandler`          | Returns `Result<T, AppError>` - recommended               |
 | `definePaginatedResultHandler` | Returns paginated `Result<[T, PaginationInfo], AppError>` |
-| `defineApiHandler` | Throws errors, auto-wrapped in standard response |
-| `definePaginatedApiHandler` | Throws errors, returns paginated data |
+| `defineApiHandler`             | Throws errors, auto-wrapped in standard response          |
+| `definePaginatedApiHandler`    | Throws errors, returns paginated data                     |
 
 ### Error Factory
 
@@ -59,14 +59,14 @@ Use `Errors` factory for consistent error codes:
 ```ts
 import { Errors } from '../lib'
 
-Errors.badRequest('Invalid input')      // 400
+Errors.badRequest('Invalid input') // 400
 Errors.unauthorized('Not authenticated') // 401
-Errors.forbidden('Access denied')        // 403
-Errors.notFound('User not found')        // 404
-Errors.conflict('Already exists')        // 409
-Errors.validation('Invalid email')       // 422
-Errors.internal('Server error')          // 500
-Errors.serviceUnavailable('DB offline')  // 503
+Errors.forbidden('Access denied') // 403
+Errors.notFound('User not found') // 404
+Errors.conflict('Already exists') // 409
+Errors.validation('Invalid email') // 422
+Errors.internal('Server error') // 500
+Errors.serviceUnavailable('DB offline') // 503
 ```
 
 ### Response Format
