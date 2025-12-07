@@ -69,7 +69,7 @@ const buttonClasses = computed(() => [
   >
     <svg
       v-if="loading"
-      class="-ml-1 mr-2 h-4 w-4 animate-spin"
+      class="mr-2 -ml-1 h-4 w-4 animate-spin"
       fill="none"
       viewBox="0 0 24 24"
     >

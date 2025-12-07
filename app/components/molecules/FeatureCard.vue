@@ -34,7 +34,9 @@ const colorClasses = {
 </script>
 
 <template>
-  <div class="bg-brand-neutral border-brand-base/10 rounded-xl border p-6 shadow-sm transition hover:shadow-lg">
+  <div
+    class="bg-brand-neutral border-brand-base/10 rounded-xl border p-6 shadow-sm transition hover:shadow-lg"
+  >
     <div
       class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg"
       :class="colorClasses[color ?? 'accent'].bg"
