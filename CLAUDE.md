@@ -7,133 +7,91 @@ Project-specific guidelines for Claude Code when working on this Nuxt template.
 ```
 app/
 ├── config/brand.ts      # Single source of truth for colors/fonts
-├── types/brand.ts       # Brand type definitions with color theory docs
+├── types/brand.ts       # Brand type definitions
 ├── components/
-│   ├── atoms/
-│   │   ├── BaseButton.vue   # Brand-aware button variants
-│   │   └── BaseMarkdown.vue # Brand-aware markdown renderer
-│   ├── AppHeader.vue        # Header with theme toggle
-│   ├── AppFooter.vue        # Footer with brand styling
-│   └── FeatureCard.vue      # Card component with brand colors
+│   ├── atoms/           # BaseButton, BaseMarkdown
+│   ├── AppHeader.vue    # Header with theme toggle
+│   └── AppFooter.vue    # Footer
 ├── composables/
 │   ├── useBrand.ts      # Brand colors/fonts (theme-aware)
-│   ├── useTheme.ts      # Light/dark theme management
-│   ├── useMarkdown.ts   # Load markdown from files/URLs
+│   ├── useTheme.ts      # Light/dark mode
+│   ├── useMarkdown.ts   # Load markdown files
 │   └── useApi.ts        # API fetch helpers
-├── layouts/default.vue  # Main layout with brand background
+├── stores/              # Pinia stores (auto-imported)
+├── layouts/default.vue  # Main layout
 ├── pages/               # File-based routing
-├── assets/css/main.css  # Tailwind @theme + prose styles
-└── error.vue            # 404/error page
+└── assets/css/main.css  # Tailwind @theme + prose
 
 server/
-├── lib/                 # API handler library (MUST USE)
-├── api/                 # API routes
+├── lib/                 # Standardized response library (MUST USE)
+│   ├── index.ts         # Single import point
+│   ├── error.ts         # AppError class + Errors factory
+│   ├── result.ts        # Result<T,E> pattern (optional)
+│   ├── response.ts      # Response types + helpers
+│   └── handler.ts       # defineApiHandler, defineResultHandler
+├── api/                 # API routes (file-based)
+├── utils/               # Validation schemas
 └── database/            # Drizzle schema + connection
 ```
 
-## Brand System (REQUIRED)
+## Brand System
 
-**All colors and fonts MUST come from `app/config/brand.ts`. No hardcoded values.**
+**All colors/fonts MUST come from `app/config/brand.ts`. Never hardcode.**
 
-### The 6-Color Semantic Palette
+### Available Classes
 
-| Color        | Coverage | Role                              | Component Usage                           |
-| ------------ | -------- | --------------------------------- | ----------------------------------------- |
-| `background` | ~60%     | Page canvas                       | `bg-brand-background`                     |
-| `neutral`    | ~20%     | Cards, elevated surfaces          | `bg-brand-neutral`                        |
-| `base`       | ~15%     | Text, icons, borders              | `text-brand-base`, `border-brand-base/10` |
-| `accent`     | ~3%      | Primary actions, links            | `bg-brand-accent`, `text-brand-accent`    |
-| `secondary`  | ~1%      | Supporting actions, tags          | `bg-brand-secondary`                      |
-| `contrast`   | ~1%      | High-impact CTAs (use sparingly!) | `bg-brand-contrast`                       |
+```
+Colors:  bg-brand-{background|neutral|base|accent|secondary|contrast}
+         text-brand-{base|accent|secondary|contrast|neutral}
+         border-brand-{base|accent|secondary|contrast|neutral}
+         Opacity: bg-brand-accent/50, text-brand-base/80
 
-### Using Brand Colors in Components
-
-```vue
-<!-- CORRECT - Use brand Tailwind classes -->
-<template>
-  <button class="bg-brand-accent text-brand-neutral">Click</button>
-  <h1 class="font-headers text-brand-base">Title</h1>
-  <div class="border-brand-secondary bg-brand-neutral">Card</div>
-</template>
-
-<!-- WRONG - Hardcoded colors -->
-<template>
-  <button class="bg-emerald-600 text-white">Click</button>  <!-- DON'T -->
-  <h1 class="text-gray-900">Title</h1>                      <!-- DON'T -->
-</template>
+Fonts:   font-logo, font-headers, font-primary, font-secondary
 ```
 
-### Available Brand Classes
+### Usage
 
-**Colors:**
+```vue
+<!-- CORRECT -->
+<button class="bg-brand-accent text-brand-neutral">Click</button>
+<h1 class="font-headers text-brand-base">Title</h1>
 
-- `bg-brand-{base|accent|contrast|secondary|neutral|background}`
-- `text-brand-{base|accent|contrast|secondary|neutral}`
-- `border-brand-{base|accent|contrast|secondary|neutral}`
-- Opacity modifiers work: `bg-brand-accent/50`, `text-brand-base/80`
+<!-- WRONG - Never use default Tailwind colors for UI -->
+<button class="bg-emerald-600 text-white">Click</button>
+```
 
-**Fonts:**
-
-- `font-logo` - Display/logo font
-- `font-headers` - Headings (h1, h2, h3)
-- `font-primary` - Body text
-- `font-secondary` - Code, captions
-
-## Theme System
+### Theme Toggle
 
 ```vue
 <script setup>
 const { isDark, toggleTheme } = useTheme()
 </script>
-
-<template>
-  <button @click="toggleTheme">{{ isDark ? 'Light' : 'Dark' }} Mode</button>
-</template>
 ```
 
-### Light vs Dark Mode Inversion
+See `app/config/brand.ts` for color definitions, `app/types/brand.ts` for docs.
 
-```
-Light Mode:                    Dark Mode:
-┌─────────────────────┐        ┌─────────────────────┐
-│ background: #ffffff │   ←→   │ background: #0f172a │  INVERTED
-│ neutral:    #f8fafc │   ←→   │ neutral:    #1e293b │  INVERTED
-│ base:       #0f172a │   ←→   │ base:       #f1f5f9 │  INVERTED
-│ accent:     #059669 │   →    │ accent:     #34d399 │  Brightened
-└─────────────────────┘        └─────────────────────┘
-```
+## State Management (Pinia)
 
-## Do NOT
-
-- Hardcode colors: `bg-emerald-600`, `text-gray-900`, `#ff0000`
-- Hardcode fonts: `font-sans`, `font-mono`
-- Use Tailwind's default color palette for UI elements
-- Use same hex value for `base` in both light and dark modes
-
-## Do
-
-- Use `bg-brand-*`, `text-brand-*`, `border-brand-*` classes
-- Use `font-logo`, `font-headers`, `font-primary`, `font-secondary`
-- Use opacity modifiers: `text-brand-base/70`, `bg-brand-accent/10`
-- Invert `base`, `background`, `neutral` between light/dark modes
-
-## Changing the Brand
-
-To rebrand the entire app, edit **only** `app/config/brand.ts`:
+Stores auto-imported from `app/stores/`. Use setup syntax.
 
 ```ts
-export const brandConfig: BrandConfig = {
-  name: 'New Brand',
-  light: {
-    accent: '#ff0000', // All buttons, links now red
-  },
-  typography: {
-    logo: 'Orbitron', // All logos now Orbitron
-  },
-}
+// app/stores/myStore.ts
+export const useMyStore = defineStore('myStore', () => {
+  const items = ref<string[]>([])
+  const loading = ref(false)
+  const isEmpty = computed(() => items.value.length === 0)
+
+  async function fetchItems() {
+    loading.value = true
+    items.value = await $fetch('/api/items')
+    loading.value = false
+  }
+
+  return { items, loading, isEmpty, fetchItems }
+})
 ```
 
-See `app/types/brand.ts` for detailed color theory documentation.
+Use `storeToRefs()` for reactive destructuring: `const { items } = storeToRefs(store)`
 
 ## Markdown Rendering
 
@@ -148,50 +106,95 @@ load('/content/article.md')
 </template>
 ```
 
-### Prose Classes
+Classes: `prose`, `prose-sm`, `prose-lg`, `prose-full`
 
-| Class          | Description                        |
-| -------------- | ---------------------------------- |
-| `prose`        | Base prose styles with brand colors|
-| `prose-sm`     | Smaller text                       |
-| `prose-lg`     | Larger text                        |
-| `prose-full`   | Remove max-width constraint        |
+## API Handlers (REQUIRED)
 
-## API Handlers
+**All API handlers MUST use `server/lib/` for standardized responses.**
 
-**All API handlers MUST use the standardized response library from `server/lib/`.**
+### Response Format
 
 ```ts
-// CORRECT - Use Result pattern
-import { defineResultHandler, Errors, Result } from '../lib'
+// Success: { success: true, timestamp, data }
+// Error:   { success: false, timestamp, error: { status, code, message } }
+// Paginated: { success: true, timestamp, data, pagination }
+```
 
-export default defineResultHandler(async (event) => {
-  const data = await fetchData()
-  if (!data) return Result.err(Errors.notFound('Resource not found'))
-  return Result.ok(data)
+### Handler Patterns
+
+| Handler | Pattern | Use Case |
+|---------|---------|----------|
+| `defineApiHandler` | Throw | Simple handlers (recommended) |
+| `defineResultHandler` | Result | Complex validation flows |
+| `definePaginatedApiHandler` | Throw | Paginated lists |
+| `definePaginatedResultHandler` | Result | Paginated with validation |
+
+### Throw Pattern (Recommended)
+
+```ts
+import { defineApiHandler, Errors } from '../../lib'
+
+export default defineApiHandler(async (event) => {
+  const id = Number(getRouterParam(event, 'id'))
+  if (isNaN(id)) throw Errors.badRequest('Invalid ID')
+
+  const user = await db.query.users.findFirst({ where: eq(users.id, id) })
+  if (!user) throw Errors.notFound('User not found')
+
+  return user  // Auto-wrapped in success response
 })
 ```
 
-### Available Handlers
+### Result Pattern (For complex flows)
 
-| Handler                        | Use Case                                                  |
-| ------------------------------ | --------------------------------------------------------- |
-| `defineResultHandler`          | Returns `Result<T, AppError>` - recommended               |
-| `definePaginatedResultHandler` | Returns paginated `Result<[T, PaginationInfo], AppError>` |
-| `defineApiHandler`             | Throws errors, auto-wrapped in standard response          |
-| `definePaginatedApiHandler`    | Throws errors, returns paginated data                     |
+```ts
+import { defineResultHandler, Errors, Result } from '../../lib'
+
+export default defineResultHandler(async (event) => {
+  const parsed = schema.safeParse(await readBody(event))
+  if (!parsed.success) return Result.err(Errors.validation(parsed.error.message))
+
+  const user = await createUser(parsed.data)
+  return Result.ok(user)
+})
+```
 
 ### Error Factory
 
 ```ts
-import { Errors } from '../lib'
+Errors.badRequest(msg)        // 400
+Errors.unauthorized(msg)      // 401
+Errors.forbidden(msg)         // 403
+Errors.notFound(msg)          // 404
+Errors.conflict(msg)          // 409
+Errors.validation(msg)        // 422
+Errors.internal(msg)          // 500
+Errors.serviceUnavailable(msg)// 503
+```
 
-Errors.badRequest('Invalid input')       // 400
-Errors.unauthorized('Not authenticated') // 401
-Errors.forbidden('Access denied')        // 403
-Errors.notFound('User not found')        // 404
-Errors.conflict('Already exists')        // 409
-Errors.validation('Invalid email')       // 422
-Errors.internal('Server error')          // 500
-Errors.serviceUnavailable('DB offline')  // 503
+### Pagination
+
+```ts
+import { createPaginationInfo, definePaginatedApiHandler } from '../../lib'
+
+export default definePaginatedApiHandler(async (event) => {
+  const { page = 1, limit = 10 } = getQuery(event)
+  const items = await db.query.items.findMany({ limit, offset: (page - 1) * limit })
+  const total = await db.select({ count: count() }).from(items)
+
+  return [items, createPaginationInfo(total[0].count, page, limit)]
+})
+```
+
+### Do NOT
+
+```ts
+// WRONG - Raw handler (no standardized response)
+export default defineEventHandler(async () => ({ user }))
+
+// WRONG - H3 createError (different format)
+throw createError({ statusCode: 404, message: 'Not found' })
+
+// WRONG - Plain Error (no metadata)
+throw new Error('Failed')
 ```

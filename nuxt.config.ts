@@ -10,7 +10,12 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
 
-  modules: ['@nuxt/eslint'],
+  modules: ['@nuxt/eslint', '@pinia/nuxt', '@nuxt/devtools'],
+
+  // Auto-import components without directory prefix
+  components: [
+    { path: '~/components', pathPrefix: false },
+  ],
 
   // Code-based routing - routes defined in app/router.options.ts
   // Pages scanning is enabled but routes are overridden programmatically

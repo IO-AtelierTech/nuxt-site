@@ -22,7 +22,7 @@ function injectBrandCSS(palette: BrandPalette, typography: BrandTypography) {
 
   // Inject font variables
   Object.entries(typography).forEach(([key, value]) => {
-    root.style.setProperty(`--font-${key}`, value)
+    root.style.setProperty(`--brand-font-${key}`, value)
   })
 }
 

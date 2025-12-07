@@ -18,10 +18,10 @@
   --color-brand-background: var(--brand-background);
 
   /* Font family tokens - values injected by useBrand composable */
-  --font-logo: var(--font-logo), system-ui, sans-serif;
-  --font-headers: var(--font-headers), system-ui, sans-serif;
-  --font-primary: var(--font-primary), system-ui, sans-serif;
-  --font-secondary: var(--font-secondary), ui-monospace, monospace;
+  --font-logo: var(--brand-font-logo), system-ui, sans-serif;
+  --font-headers: var(--brand-font-headers), system-ui, sans-serif;
+  --font-primary: var(--brand-font-primary), system-ui, sans-serif;
+  --font-secondary: var(--brand-font-secondary), ui-monospace, monospace;
 }
 
 /*
